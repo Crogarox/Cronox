@@ -1,0 +1,27 @@
+This is Perl module Cronox.
+
+INSTALLATION
+
+Cronox installation is straightforward. If your CPAN shell is set up,
+you should just be able to do
+
+    % cpan Cronox
+
+Download it, unpack it, then build it as per the usual:
+
+    % perl Makefile.PL
+    % make && make test
+
+Then install it:
+
+    % make install
+
+DOCUMENTATION
+
+Cronox documentation is available as in POD. So you can do:
+
+    % perldoc Cronox
+
+to read the documentation online with your favorite pager.
+
+Kosuke Arisawa

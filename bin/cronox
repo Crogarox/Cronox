@@ -1,0 +1,90 @@
+#!/usr/bin/env perl
+
+use strict;
+use warnings;
+
+use FindBin::libs;
+use lib "$FindBin::RealBin/../lib";
+use Getopt::Long;
+use Pod::Usage;
+use Cronox;
+
+my $opts        = {};
+my $plugin_opts = [];
+GetOptions(
+    $opts,
+    qw(config=s env=s debug version man help),
+    'plugin-opt=s' => $plugin_opts
+);
+
+pod2usage(1) if $opts->{help};
+pod2usage( -verbose => 2 ) if $opts->{man};
+
+if ( $opts->{version} ) {
+    print "$Cronox::VERSION\n";
+    exit 0;
+}
+die "no command" unless @ARGV;
+my @cmd = @ARGV;
+
+Cronox->new(\@cmd, $opts, $plugin_opts)->run;
+
+__END__
+
+=head1 NAME
+
+cronox - execute command and some plugins (logging, send mail, insert to database, ..)
+
+=head1 VERSION
+
+0.01
+
+=head1 DESCRIPTION
+
+
+
+=head1 SYNOPSIS
+
+  cronox [--config=config_file] [--env=config_environment] [--plugin-opt=plugin_name:key:value] \
+    -- cmd --args ...
+
+  Options:
+    --config                  config file
+    --env                     config environment
+    --plugin-opt              specify plugin option(s) format is plugin_module__name:key:value
+                               ex) --plugin-opt notify_mail:to:arisawa@dena.jp
+
+    --dualboot                permit dualboot
+    --nodualboot              do not permit dualboot(default)
+    --debug                   debug mode
+    --version                 show version
+
+    --help|-h		      brief help message
+    --man		      full documentaion
+
+=head1 OPTIONS
+
+=item B<--help|-h>
+
+Print brief help message and exit
+
+=item B<--man>
+
+Prints the manual page and exit
+
+=head1 AUTHOR
+
+Kosuke Arisawa
+
+=head1 SEE ALSO
+
+=cut
+
+# Local Variables:
+# mode: perl
+# perl-indent-level: 4
+# indent-tabs-mode: nil
+# coding: utf-8-unix
+# End:
+#
+# vim: expandtab shiftwidth=4:

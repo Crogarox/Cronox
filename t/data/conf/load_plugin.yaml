@@ -1,0 +1,3 @@
+plugins:
+  - module: +t::TestCronox::Plugin
+    disable: 0

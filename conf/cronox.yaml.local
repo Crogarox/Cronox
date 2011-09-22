@@ -1,0 +1,29 @@
+tmpdir: /tmp/cronox
+dualboot: 0
+print_stderr: 1
+
+plugins:
+  - module: Recorder::Log
+    disable: 0
+    config:
+      dir: log
+      filename: 
+      retention_days: 1
+
+  - module: Recorder::Database
+    disable: 0
+    config:
+      driver:   mysql           # Fixed value. It's hard coding...
+      hostname: localhost
+      database: cronox
+      username: cronox
+      password: cronox
+
+  - module: Notify::Mail
+    disable: 1
+    config:
+      notify_status: error
+      smtp: local.example.com
+      from: cronox@example.com
+      to:
+        - arisawa+cronox@gmail.com
