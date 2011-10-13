@@ -41,8 +41,6 @@ cronox - execute command and some plugins (logging, send mail, insert to databas
 
 =head1 DESCRIPTION
 
-
-
 =head1 SYNOPSIS
 
   cronox [--config=config_file] [--env=config_environment] [--plugin-opt=plugin_name:key:value] \
@@ -50,6 +48,7 @@ cronox - execute command and some plugins (logging, send mail, insert to databas
 
   Options:
     --config                  config file
+                               if you specified relative path, default dir: cronox/conf/
     --env                     config environment
     --plugin-opt              specify plugin option(s) format is plugin_module__name:key:value
                                ex) --plugin-opt notify_mail:to:arisawa@dena.jp
