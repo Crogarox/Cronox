@@ -9,7 +9,7 @@ use Path::Class ();
 use Cwd ();
 
 use Exporter qw(import);
-our @EXPORT      = qw(path_to script_name script_path parse_command now);
+our @EXPORT      = qw(path_to script_name script_path parse_command parse_script_name now);
 our @EXPORT_OK   = qw(home);
 our %EXPORT_TAGS = (
     default => [ @EXPORT ],
@@ -60,6 +60,13 @@ sub script_path {
 sub parse_command {
     my $cmd = $_[0]->[0];
     (split(/\s+/, $cmd))[0];
+}
+
+sub parse_script_name {
+    my $cmd = $_[0]->[0];
+    $cmd = (split(/\s+/, $cmd))[0];
+    my $abs_path = Cwd::abs_path($cmd);
+    (-f $abs_path) ? File::Basename::basename($abs_path) : ""
 }
 
 sub now {

@@ -16,7 +16,8 @@ sub init {
     $logdir = ( index( $logdir, '/' ) ne 0 ) ? path_to($logdir) : $logdir;
     mkdir $logdir unless -d $logdir;
 
-    my $logfile = $opts->{logfile} || $self->config->{logfile} || script_name( $cx->cmd ) || parse_command( $cx->cmd );
+    my $logfile = $opts->{logfile} || $self->config->{logfile}
+                    || script_name( $cx->cmd ) || parse_script_name( $cx->cmd );
     my $errfile = $opts->{errfile} || $self->config->{errfile} || 'cronox_err';
 
     $self->logdir($logdir);

@@ -18,6 +18,7 @@ create_test_db($dbh);
 {
     note 'Execute user script';
     $cx = context( [ './t/bin/echo.sh' ] );
+    $cx->initialize;
     $db->init($cx);
 
     my $dbh = $db->dbh; $dbh->{AutoCommit} = 1;
@@ -38,14 +39,15 @@ create_test_db($dbh);
     is $init->{$_}, $finalize->{$_}
         for qw(id script_name script_path exit_code command started_on);
 
-    is $finalize->{output}, 'test';
+    like $finalize->{output}, qr/test/;
     ok $finalize->{finished_on} > 0;
-
+    $cx->finalize;
 };
 
 {
     note 'Execute user script error occured';
     $cx = context( [ './t/bin/echo_error.sh' ] );
+    $cx->initialize;
     $db->init($cx);
 
     my $init = get_history($db);
@@ -64,21 +66,23 @@ create_test_db($dbh);
     is $init->{$_}, $finalize->{$_}
         for qw(id script_name script_path command started_on);
 
-    ok $finalize->{exit_code} eq 1;
-    is $finalize->{output}, 'test';
+    ok $finalize->{exit_code} eq 127;
+    like $finalize->{output}, qr/test/;
     ok $finalize->{finished_on} > 0;
+    $cx->finalize;
 };
 
 {
     note 'Execute command';
-    $cx = context( [ 'echo -n cronox' ] );
+    $cx = context( [ '/bin/echo -n cronox' ] );
+    $cx->initialize;
     $db->init($cx);
 
     my $init = get_history($db);
     is $init->{script_name}, "";
     is $init->{script_path}, "";
     is $init->{exit_code}, 0;
-    is $init->{command}, 'echo -n cronox';
+    is $init->{command}, '/bin/echo -n cronox';
     ok !$init->{output};
     ok $init->{started_on} > 0;
     ok $init->{finished_on} eq 0;
@@ -90,8 +94,9 @@ create_test_db($dbh);
     is $init->{$_}, $finalize->{$_}
         for qw(id script_name script_path exit_code command started_on);
 
-    is $finalize->{output}, 'cronox';
+    like $finalize->{output}, qr/cronox/;
     ok $finalize->{finished_on} > 0;
+    $cx->finalize;
 };
 
 sub get_history {
