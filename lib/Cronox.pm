@@ -186,7 +186,6 @@ sub exec {
         my $waitpid = waitpid( $pid, WNOHANG );
 
         if ( $waitpid ne 0 && $waitpid ne -1 ) {
-            warn $?;
             $self->exit_code($?);
         }
         if ( $waitpid eq -1 ) {
