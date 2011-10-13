@@ -2,7 +2,7 @@ package Cronox;
 use strict;
 use warnings;
 use Class::Accessor::Lite (
-    rw => [qw(cmd opts pid pidfile config plugins plugin_opts exit_code)] );
+    rw => [qw(cmd opts pid pidfile config plugins plugin_opts exit_code started_on finished_on)] );
 use UNIVERSAL::require;
 use Class::Trigger;
 use Fcntl qw(:flock);
@@ -20,7 +20,7 @@ sub new {
     my ( $class, $cmd, $opts, $plugin_opts ) = @_;
     my $cl = Cronox::ConfigLoader->new($opts)->load;
 
-    return bless {
+    my $self = bless {
         config      => $cl->config,
         cmd         => $cmd,
         opts        => $opts,
@@ -30,7 +30,12 @@ sub new {
         pid         => "",
         pidfile     => "",
         exit_code   => -1,
+        started_on  => 0,
+        finished_on => 0,
     }, $class;
+
+    $self->diag("config_file:".$cl->config_file);
+    $self;
 }
 
 sub debug { $_[0]->opts->{debug} }
@@ -38,6 +43,8 @@ sub diag  { chomp $_[1]; print STDERR $_[1],"\n" if $_[0]->debug }
 
 sub initialize {
     my $self = shift;
+
+    $self->started_on(time);
 
     my $tmpdir = $self->config->{tmpdir};
     unless (-d $tmpdir) {
@@ -179,6 +186,7 @@ sub exec {
         my $waitpid = waitpid( $pid, WNOHANG );
 
         if ( $waitpid ne 0 && $waitpid ne -1 ) {
+            warn $?;
             $self->exit_code($?);
         }
         if ( $waitpid eq -1 ) {
@@ -190,6 +198,9 @@ sub exec {
         }
         Time::HiRes::usleep(1);
     }
+    $self->finished_on(time);
+    $self->readline("execution time(s):".($self->finished_on - $self->started_on))
+        if ($self->started_on && $self->finished_on);
     $self;
 }
 

@@ -18,7 +18,7 @@ sub init {
             script_name => script_name( $cx->cmd ),
             script_path => script_path( $cx->cmd ),
             command     => $cx->cmdstr,
-            started_on  => time(),
+            started_on  => $cx->started_on,
         },
     );
     $self->{builder} = $builder;
@@ -40,7 +40,7 @@ sub finalize {
         {
             exit_code   => $cx->exit_code,
             output      => $cx->output,
-            finished_on => time(),
+            finished_on => $cx->finished_on,
         },
         { id => $self->{history_id} },
     );
