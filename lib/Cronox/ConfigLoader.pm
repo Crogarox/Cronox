@@ -15,14 +15,22 @@ sub new {
     Carp::croak('Specify either dualboot and nodualboot options')
       if $args{dualboot} && $args{nodualboot};
 
-    my $config_file = $args{config} || path_to('conf/cronox.yaml');
-    $config_file .= ".$args{env}" if $args{env};
-
     return bless {
         opts        => \%args,
         config      => {},
-        config_file => $config_file,
+        config_file => find_config(%args),
     }, $class;
+}
+
+sub find_config {
+    my %args = @_;
+    my $config_file = $args{config} && -f path_to("conf/$args{config}") && path_to("conf/$args{config}")
+                   || $args{config}
+                   || path_to("conf/cronox.yaml");
+    $config_file .= ".$args{env}" if $args{env};
+
+    -f $config_file || die "$config_file is not found";
+    $config_file;
 }
 
 sub load {
