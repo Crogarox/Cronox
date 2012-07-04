@@ -4,6 +4,8 @@ all_from 'lib/Cronox.pm';
 
 requires 'Class::Trigger';
 requires 'Class::Accessor::Lite';
+requires 'Config::ENV';
+
 #requires 'FindBin::libs';
 requires 'Path::Class';
 requires 'UNIVERSAL::require';
