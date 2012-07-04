@@ -1,30 +1,30 @@
 package Cronox;
 use strict;
 use warnings;
-use Class::Accessor::Lite (
-    rw => [qw(cmd opts pid pidfile config plugins plugin_opts exit_code started_on finished_on)] );
 use UNIVERSAL::require;
 use Class::Trigger;
-use Fcntl qw(:flock);
+use Fcntl qw/:flock/;
 use POSIX;
 use Sys::Hostname;
 use Time::HiRes ();
-use IPC::Open3 qw(open3);
-
+use IPC::Open3 qw/open3/;
+use Class::Accessor::Lite (
+    rw => [qw/cmd opts pid pidfile config plugins plugin_opts
+              exit_code started_on finished_on/],
+);
 use Cronox::Util;
-use Cronox::ConfigLoader;
+use Cronox::Config;
 
 our $VERSION = '0.02';
 
 sub new {
     my ( $class, $cmd, $opts, $plugin_opts ) = @_;
-    my $cl = Cronox::ConfigLoader->new($opts)->load;
 
     my $self = bless {
-        config      => $cl->config,
+        config      => Cronox::Config->current,
         cmd         => $cmd,
-        opts        => $opts,
-        plugin_opts => $plugin_opts,
+        opts        => $opts || {},
+        plugin_opts => $plugin_opts || {},
         _output     => [],
         host        => hostname(),
         pid         => "",
@@ -34,11 +34,15 @@ sub new {
         finished_on => 0,
     }, $class;
 
-    $self->diag("config_file:".$cl->config_file);
+    map {
+        $self->diag("$_:$ENV{$_}")
+            if ($ENV{$_} && -f $ENV{$_})
+    } qw/CRONOX_CONFIG CRONOX_LOCAL_CONFIG/;
+
     $self;
 }
 
-sub debug { $_[0]->opts->{debug} }
+sub debug { $ENV{CRONOX_DEBUG} || $_[0]->opts->{debug} }
 sub diag  { chomp $_[1]; print STDERR $_[1],"\n" if $_[0]->debug }
 
 sub initialize {
@@ -46,7 +50,7 @@ sub initialize {
 
     $self->started_on(time);
 
-    my $tmpdir = $self->config->{tmpdir};
+    my $tmpdir = Cronox::Config->param('tmpdir') || '/tmp/cronox';
     unless (-d $tmpdir) {
         mkdir $tmpdir;
         $self->diag("create: $tmpdir");
@@ -72,7 +76,7 @@ sub finalize {
 sub load_plugins {
     my $self = shift;
 
-    my $plugins = delete $self->config->{plugins} || {};
+    my $plugins = Cronox::Config->param('plugins') || {};
     for (@$plugins) {
         next if $_->{disable};
         my $module = $_->{module} || next;
@@ -205,17 +209,19 @@ sub exec {
 
 sub readline {
     my ($self, $line) = @_;
+
     chomp $line; $line .= "\n";
-    print STDERR $line if $self->config->{print_stderr};
+    print STDERR $line if Cronox::Config->param('print_stderr');
+
     $self->call_trigger( 'readline', $line );
     $self->add_output($line);
 }
 
 sub check_dualboot    { !$_[0]->config->{can_dualboot} && -f $_[0]->pidfile }
 
-sub cmdstr { join ' ', @{ shift->cmd } }
-sub output { join( "", @{ shift->{_output} } ) }
-sub add_output { push @{ shift->{_output} }, @_ }
+sub cmdstr     { join ' ', @{ $_[0]->cmd } }
+sub output     { join( "", @{ $_[0]->{_output} } ) }
+sub add_output { push @{ $_[0]->{_output} }, @_ }
 
 1;
 
