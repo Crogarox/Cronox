@@ -8,8 +8,8 @@ BEGIN { use_ok 'Cronox::Util' }
 
 ok path_to('log'), 'relative path';
 is path_to('/path/to') => '/path/to', 'abstruct dir path';
-is path_to(path_to('t/data/conf/configloader.yml'))
-    => sprintf('%s/%s', Cronox::Util->home, 't/data/conf/configloader.yml'),
+is path_to(path_to('t'))
+    => sprintf('%s/%s', Cronox::Util->home, 't'),
     'abstruct file path';
 
 is script_name([ qw(t/bin/echo.sh --option hoge) ])

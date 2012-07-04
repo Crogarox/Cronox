@@ -8,10 +8,9 @@ use Data::Dumper;
 BEGIN { use_ok 'Cronox' }
 
 subtest 'Load and call plugins' => sub {
-    my $opts = { config_file => path_to('t/data/conf/load_plugin.yaml') };
     my $plugin_opts = [];
 
-    my $cx = Cronox->new([ 'ls' ], $opts, $plugin_opts);
+    my $cx = Cronox->new([ 'ls' ], undef, $plugin_opts);
     $cx->load_plugins;
 
     for my $method (trigger_methods()) {
@@ -22,8 +21,6 @@ subtest 'Load and call plugins' => sub {
 };
 
 subtest 'Load plugin options' => sub {
-    my $opts = { config_file => path_to('t/data/conf/load_plugin_options.yaml') };
-
     my $tests = [
         {
             plugin_opts => [],
@@ -43,7 +40,7 @@ subtest 'Load plugin options' => sub {
     ];
 
     for my $test (@$tests) {
-        my $cx = Cronox->new([ 'ls' ], $opts, $test->{plugin_opts});
+        my $cx = Cronox->new([ 'ls' ], undef, $test->{plugin_opts});
         $cx->load_plugins;
         $cx->call_trigger('init');
         is_deeply(@{ $cx->last_trigger_results }, [ $test->{expected} ]);
@@ -51,11 +48,7 @@ subtest 'Load plugin options' => sub {
     done_testing;
 };
 
-{
-    note 'Execute commands';
-    my $opts = { config_file => path_to('t/data/conf/load_plugin.yaml') };
-    my $plugin_opts = [];
-
+subtest 'Execute commands' => sub {
     my $tests = [
         {
             command   => [qw(ls /path/is/not/found)],
@@ -70,7 +63,7 @@ subtest 'Load plugin options' => sub {
     ];
 
     for my $test (@$tests) {
-        my $cx = Cronox->new($test->{command}, $opts, $plugin_opts)->run;
+        my $cx = Cronox->new($test->{command})->run;
         like( $cx->output, qr/^$test->{output}/,
             sprintf( 'fixed "%s" output', show_cmd( $test->{command} ) ) );
         is( $cx->exit_code, $test->{exit_code},

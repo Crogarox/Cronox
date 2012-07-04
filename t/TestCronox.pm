@@ -17,8 +17,7 @@ our $mysqld;
 
 sub context {
     my $cmd = shift;
-    $context = Cronox->new($cmd || [qw(ls)],
-                           { config_file => './t/data/conf/test_all.yaml' }, {});
+    $context = Cronox->new( $cmd || [qw(ls)] );
     $context;
 }
 
